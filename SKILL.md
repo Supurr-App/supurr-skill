@@ -11,19 +11,20 @@ description: Backtest, deploy, and monitor grid trading bots on Hyperliquid. Sup
 
 ## Quick Reference
 
-| Command                | Purpose                   |
-| ---------------------- | ------------------------- |
-| `supurr init`          | Setup wallet credentials  |
-| `supurr whoami`        | Show current wallet       |
-| `supurr new grid`      | Generate strategy config  |
-| `supurr configs`       | List saved configs        |
-| `supurr config <name>` | View config details       |
-| `supurr backtest`      | Run historical simulation |
-| `supurr deploy`        | Deploy bot to production  |
-| `supurr monitor`       | View active bots          |
-| `supurr stop`          | Stop a running bot        |
-| `supurr prices`        | Debug price data          |
-| `supurr update`        | Update CLI to latest      |
+| Command                | Purpose                      |
+| ---------------------- | ---------------------------- |
+| `supurr init`          | Setup wallet credentials     |
+| `supurr whoami`        | Show current wallet          |
+| `supurr new grid`      | Generate strategy config     |
+| `supurr configs`       | List saved configs           |
+| `supurr config <name>` | View config details          |
+| `supurr backtest`      | Run historical simulation    |
+| `supurr deploy`        | Deploy bot to production     |
+| `supurr monitor`       | View active bots             |
+| `supurr history`       | View historical bot sessions |
+| `supurr stop`          | Stop a running bot (signed)  |
+| `supurr prices`        | Debug price data             |
+| `supurr update`        | Update CLI to latest         |
 
 ---
 
@@ -257,7 +258,30 @@ supurr monitor -w 0x1234...    # Filter by wallet
 
 ---
 
-## 9. `supurr stop` — Stop Bot
+## 9. `supurr history` — View Bot History
+
+```bash
+supurr history             # Show last 20 bot sessions
+supurr history -n 50       # Show last 50 bot sessions
+```
+
+| Option                | Default | Description            |
+| --------------------- | ------- | ---------------------- |
+| `-n, --limit <count>` | `20`    | Number of bots to show |
+
+**Output Columns:**
+
+- **ID** — Bot identifier
+- **Market** — Trading pair (from `config.markets[0]`)
+- **Type** — Strategy (grid, dca, mm)
+- **PnL** — Total profit/loss (realized + unrealized)
+- **Stop Reason** — Why the bot stopped (`shutdown:graceful` → "User stopped the bot Successfully")
+
+---
+
+## 10. `supurr stop` — Stop Bot (Signature Auth)
+
+Signs `Stop <bot-id>` with your API wallet private key (EIP-191 personal_sign) and sends the signature to the bot API.
 
 ```bash
 supurr stop              # Interactive - select from list
@@ -268,9 +292,11 @@ supurr stop --id 217     # Stop specific bot by ID
 | --------------- | -------------------------------------- |
 | `--id <bot_id>` | Bot ID to stop (from `supurr monitor`) |
 
+> **Crypto:** Uses `@noble/curves/secp256k1` + `@noble/hashes/sha3` (pure JS, no native deps). Signature format: `0x{r}{s}{v}` (65 bytes).
+
 ---
 
-## 10. `supurr prices` — Debug Price Data
+## 11. `supurr prices` — Debug Price Data
 
 ```bash
 supurr prices -a BTC                     # Fetch BTC prices (7 days)
@@ -288,7 +314,7 @@ supurr prices -a HYPE -s 2026-01-28      # From specific date
 
 ---
 
-## 11. `supurr update` — Self-Update
+## 12. `supurr update` — Self-Update
 
 ```bash
 supurr update    # Check and install latest version
@@ -361,13 +387,14 @@ supurr backtest -c hyna-btc.json -s 2026-01-28 -e 2026-02-01
 
 ## API Endpoints Used
 
-| Purpose       | Endpoint                                 |
-| ------------- | ---------------------------------------- |
-| Bot Deploy    | `POST /bots/create/<wallet>`             |
-| Active Bots   | `GET /dashboard/active_bots`             |
-| Stop Bot      | `POST /bots/stop/<bot_id>`               |
-| Price Data    | `GET /prices?dex=X&asset=Y&start_time=Z` |
-| Price Archive | `GET /{dex}/{asset}/{date}.json`         |
+| Purpose       | Endpoint                                      | Auth              |
+| ------------- | --------------------------------------------- | ----------------- |
+| Bot Deploy    | `POST /bots/create/<wallet>`                  | —                 |
+| Active Bots   | `GET /dashboard/active_bots`                  | —                 |
+| Bot History   | `GET /dashboard/user_bots/<address>` (Python) | —                 |
+| Stop Bot      | `POST /bots/<bot_id>/stop` (Node)             | EIP-191 signature |
+| Price Data    | `GET /prices?dex=X&asset=Y&start_time=Z`      | —                 |
+| Price Archive | `GET /{dex}/{asset}/{date}.json`              | —                 |
 
 ---
 
