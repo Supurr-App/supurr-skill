@@ -193,6 +193,8 @@ supurr backtest -c btc-grid.json -s 2026-01-28 -e 2026-02-01 -o results.json
 | `hyna`        | `hyna:BTC`, `hyna:ETH` | HIP-3 DEX          |
 
 > **Note**: Archive data available from 2026-01-28 onwards.
+>
+> **Important**: Backtests use Supurr's price archive (tick-level) or a user-provided prices file (`-p`). Do **not** use Hyperliquid Info API mids/candles for backtests; they don't provide tick-level historical data and will produce inaccurate results.
 
 ---
 
@@ -442,6 +444,8 @@ supurr backtest -c hyna-btc.json -s 2026-01-28 -e 2026-02-01
 ---
 
 # Appendix: Hyperliquid Info API
+
+> **Backtesting note**: This appendix is for live metadata and user state lookups. It is **not** a source of tick-level historical data for `supurr backtest`.
 
 > **Get address via**: `supurr whoami` — returns the configured wallet address.
 
