@@ -199,29 +199,60 @@ supurr backtest -c btc-grid.json -s 2026-01-28 -e 2026-02-01 -o results.json
 ## 7. `supurr deploy` — Deploy Bot
 
 ```bash
-supurr deploy -c <config>
+supurr deploy -c <config> [-s <address> | -v <address>]
 ```
 
-| Option                | Description                              |
-| --------------------- | ---------------------------------------- |
-| `-c, --config <file>` | **Required.** Config file (name or path) |
+| Option                       | Description                                             |
+| ---------------------------- | ------------------------------------------------------- |
+| `-c, --config <file>`        | **Required.** Config file (name or path)                |
+| `-s, --subaccount <address>` | Trade from a subaccount (validates master ownership)    |
+| `-v, --vault <address>`      | Trade from a vault (validates you are the vault leader) |
 
-### Example
+> **Subaccount vs Vault:**
+>
+> - **Subaccount** = personal trading account under your master wallet. Verified via `subAccounts` API (checks `master` field).
+> - **Vault** = shared investment pool you manage. Verified via `vaultDetails` API (checks `leader` field).
+> - Both set `vault_address` in the bot config on success.
+> - **Cannot use both** `--subaccount` and `--vault` simultaneously.
+
+### Examples
 
 ```bash
+# Deploy from main wallet
 supurr deploy -c btc-grid.json
+
+# Deploy from subaccount
+supurr deploy -c btc-grid.json -s 0x804e57d7baeca937d4b30d3cbe017f8d73c21f1b
+
+# Deploy from vault (you must be the vault leader)
+supurr deploy -c config.json --vault 0xdc89f67e74098dd93a1476f7da79747f71ccb5d9
+
+# HL: prefix is auto-stripped (copy-paste from Hyperliquid UI)
+supurr deploy -c config.json -s HL:0x804e57d7baeca937d4b30d3cbe017f8d73c21f1b
 ```
 
 **Output:**
 
 ```
+✔ Loaded config for grid strategy
+✔ Subaccount verified: 0x804e57d7...
 ✔ Bot deployed successfully!
 📦 Deployment Details
   Bot ID:       217
-  Pod Name:     bot-217-xyz
+  Pod Name:     bot-217
   Bot Type:     grid
   Market:       BTC-USDC
 ```
+
+### Gotchas
+
+| Issue                        | Solution                                                                   |
+| ---------------------------- | -------------------------------------------------------------------------- |
+| `HL:` prefix in address      | Auto-stripped — safe to paste from Hyperliquid explorer                    |
+| "Subaccount not owned"       | Ensure the subaccount's `master` matches your `supurr whoami` address      |
+| "Vault not found"            | Check the vault address exists on the correct network (mainnet vs testnet) |
+| "Vault leader mismatch"      | Only the vault leader can deploy — check `vaultDetails` API                |
+| `subAccounts` returns `null` | Normal — means no subaccounts exist for that address                       |
 
 ---
 
@@ -438,6 +469,7 @@ All endpoints use `POST https://api.hyperliquid.xyz/info` with `Content-Type: ap
 | Trade Fills     | `{"type": "userFills", "user": "0x...", "aggregateByTime": true}`              |
 | Funding History | `{"type": "userFunding", "user": "0x...", "startTime": <ts>, "endTime": <ts>}` |
 | Sub-Accounts    | `{"type": "subAccounts", "user": "0x..."}`                                     |
+| Vault Details   | `{"type": "vaultDetails", "vaultAddress": "0x..."}`                            |
 
 ## HIP-3 Sub-DEXes
 
