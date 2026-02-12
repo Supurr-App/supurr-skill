@@ -666,3 +666,13 @@ const dexes = await query({ type: "perpDexs" });
 | HIP-3 price prefix      | Sub-DEX prices keyed as `hyna:BTC`, not `BTC`     |
 | Sub-DEX asset index     | Use local index from DEX's `universe`, not global |
 | Fill limits             | `userFills` max 2000 — paginate with time ranges  |
+
+---
+
+## Tutorials
+
+Step-by-step deployment guides with parameter selection advice and practical tips:
+
+- [Grid Bot Tutorial](tutorials/grid.md) — Range trading with buy/sell grids
+- [Arb Bot Tutorial](tutorials/arb.md) — Market-neutral spot-perp arbitrage
+- [DCA Bot Tutorial](tutorials/dca.md) — Dollar-cost averaging with auto-restart
